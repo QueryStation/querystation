@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>QueryVault__c</fullName>
-    <customObject>true</customObject>
-    <label>Query Vault</label>
-    <motif>Custom66: Books</motif>
-</CustomTab>
