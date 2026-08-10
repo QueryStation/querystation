@@ -100,6 +100,19 @@ public with sharing class QueryVaultService {
         return records[0];
     }
 
+    /**
+     * Returns the current state of the transaction-scoped cache.
+     * Useful for debugging — shows which vault records have been loaded this transaction.
+     *
+     * @return  Map of Query_For__c label to its cached QueryVault__c record
+     * @example
+     * Map<String, QueryVault__c> cached = QueryVaultService.getCachedRecords();
+     * System.debug('Cached entries: ' + cached.size());
+     */
+    public static Map<String, QueryVault__c> getCachedRecords() {
+        return QUERY_CACHE;
+    }
+
     // ─── Exception ───────────────────────────────────────────────────────────
 
     /**
