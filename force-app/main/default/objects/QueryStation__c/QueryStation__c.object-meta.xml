@@ -153,14 +153,14 @@
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <externalSharingModel>Private</externalSharingModel>
-    <label>Query Vault</label>
+    <label>Query Station</label>
     <nameField>
-        <displayFormat>QV-{0000}</displayFormat>
-        <label>QueryVault Name</label>
+        <displayFormat>QS-{0000}</displayFormat>
+        <label>QueryStation Name</label>
         <trackHistory>false</trackHistory>
         <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>QueryVault</pluralLabel>
+    <pluralLabel>QueryStation</pluralLabel>
     <searchLayouts></searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>
