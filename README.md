@@ -300,7 +300,7 @@ in that context.
 | SOQL support | Available now |
 | Parameterized bind variables | Available now |
 | Access gates | Planned |
-| Batch Apex support | Available now |
+| Batch Apex support | Planned |
 | Query versioning | Planned |
 | Audit log | Planned |
 | Query testing UI | Planned |
