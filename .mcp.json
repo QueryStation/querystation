@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "sobject-all": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/platform/sobject-all"
+    },
+    "metadata-experts": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/platform/metadata-experts"
+    },
+    "salesforce-api-context-2": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/platform/salesforce-api-context"
+    },
+    "engagement-interaction": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/industries/engagement-interaction"
+    },
+    "sobject-mutations": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/platform/sobject-mutations"
+    },
+    "sobject-reads": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/platform/sobject-reads"
+    },
+    "headless-360": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/platform/headless-360"
+    },
+    "sobject-deletes": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/platform/sobject-deletes"
+    },
+    "agentforce-grid": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/platform/agentforce-grid"
+    },
+    "data-cloud-sql": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/data/data-cloud-queries"
+    },
+    "data360": {
+      "type": "streamable-http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/data/data360"
+    }
+  }
+}

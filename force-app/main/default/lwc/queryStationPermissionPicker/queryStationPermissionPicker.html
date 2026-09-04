@@ -1,0 +1,43 @@
+<template>
+    <lightning-card title="Access Control" icon-name="utility:shield">
+        <div class="slds-p-around_medium">
+
+            <template lwc:if={error}>
+                <p class="slds-text-color_error">{error}</p>
+            </template>
+
+            <lightning-dual-listbox
+                name="allowedPermissionSets"
+                label="Allowed Permission Sets"
+                source-label="Available"
+                selected-label="Selected"
+                field-level-help="Users must hold at least one of these Permission Sets to execute this query."
+                options={permissionSetOptions}
+                value={selectedPermSetsValue}
+                onchange={handlePermSetChange}>
+            </lightning-dual-listbox>
+
+            <div class="slds-m-top_medium">
+                <lightning-combobox
+                    name="requiredCustomPermission"
+                    label="Required Custom Permission"
+                    field-level-help="User must hold this Custom Permission to execute this query."
+                    placeholder="— None —"
+                    options={customPermissionOptions}
+                    value={selectedCustomPerm}
+                    onchange={handleCustomPermChange}>
+                </lightning-combobox>
+            </div>
+
+            <div class="slds-m-top_medium">
+                <lightning-button
+                    variant="brand"
+                    label="Save"
+                    disabled={saving}
+                    onclick={handleSave}>
+                </lightning-button>
+            </div>
+
+        </div>
+    </lightning-card>
+</template>
