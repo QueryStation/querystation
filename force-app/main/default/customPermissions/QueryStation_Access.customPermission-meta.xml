@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>Grants the ability to execute stored SOQL queries via QueryStationService. Assign this permission to any Permission Set that should be allowed to call QueryStationService.execute(), executeForEach(), or getQueryLocator().</description>
-    <isLicensed>false</isLicensed>
-    <label>Query Station Access</label>
-</CustomPermission>

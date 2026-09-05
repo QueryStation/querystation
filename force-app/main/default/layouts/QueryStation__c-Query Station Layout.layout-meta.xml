@@ -44,10 +44,6 @@
                 <behavior>Edit</behavior>
                 <field>Allowed_Permission_Sets__c</field>
             </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
-                <field>Required_Custom_Permission__c</field>
-            </layoutItems>
         </layoutColumns>
         <style>TwoColumnsLeftToRight</style>
     </layoutSections>
@@ -59,7 +55,7 @@
         <layoutColumns>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Query_For__c</field>
+                <field>Query_Text__c</field>
             </layoutItems>
         </layoutColumns>
         <style>OneColumn</style>

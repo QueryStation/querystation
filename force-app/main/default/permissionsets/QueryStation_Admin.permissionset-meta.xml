@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
-    <label>QueryStation User</label>
-    <description>Read-only access to QueryStation__c records. Assign to any user who should execute stored queries via QueryStationService. Users can only read query records visible to them via org sharing — no CRUD on the query library.</description>
+    <label>QueryStation Admin</label>
+    <description>Full CRUD access to QueryStation__c records. Assign to administrators who create, edit, and delete stored queries.</description>
     <hasActivationRequired>false</hasActivationRequired>
     <objectPermissions>
-        <allowCreate>false</allowCreate>
+        <allowCreate>true</allowCreate>
         <allowRead>true</allowRead>
-        <allowEdit>false</allowEdit>
-        <allowDelete>false</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowDelete>true</allowDelete>
         <modifyAllRecords>false</modifyAllRecords>
         <viewAllRecords>false</viewAllRecords>
         <viewAllFields>false</viewAllFields>
         <object>QueryStation__c</object>
     </objectPermissions>
     <fieldPermissions>
-        <editable>false</editable>
+        <editable>true</editable>
         <readable>true</readable>
         <field>QueryStation__c.Active__c</field>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
+        <editable>true</editable>
         <readable>true</readable>
         <field>QueryStation__c.Allowed_Permission_Sets__c</field>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
+        <editable>true</editable>
         <readable>true</readable>
         <field>QueryStation__c.Description__c</field>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
+        <editable>true</editable>
         <readable>true</readable>
         <field>QueryStation__c.Object_Name__c</field>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
+        <editable>true</editable>
         <readable>true</readable>
         <field>QueryStation__c.Parameters__c</field>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
+        <editable>true</editable>
         <readable>true</readable>
         <field>QueryStation__c.Query_Text__c</field>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
+        <editable>true</editable>
         <readable>true</readable>
         <field>QueryStation__c.Query_Key__c</field>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
+        <editable>true</editable>
         <readable>true</readable>
         <field>QueryStation__c.Query_Text__c</field>
     </fieldPermissions>
@@ -57,4 +57,12 @@
         <apexClass>QueryStationService</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <classAccesses>
+        <apexClass>QueryStationPickerController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <tabSettings>
+        <tab>QueryStation__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>

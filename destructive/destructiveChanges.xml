@@ -4,5 +4,14 @@
         <members>queryStationGraphQL</members>
         <name>LightningComponentBundle</name>
     </types>
-    <version>66.0</version>
+    <types>
+        <members>QueryStation_Access</members>
+        <name>CustomPermission</name>
+    </types>
+    <types>
+        <members>QueryStation__c.Required_Custom_Permission__c</members>
+        <members>QueryStation__c.Query_For__c</members>
+        <name>CustomField</name>
+    </types>
+    <version>67.0</version>
 </Package>

@@ -6,6 +6,9 @@
  *   executeForEach()  — chunk boundary (exactly 200), remainder chunk (<200), null handler
  *   getQueryLocator() — positive, blank queryName, record not found
  *   getRecord()       — cache hit (no second SOQL), record not found
+ *   Gate 2            — permission set required, allowed, denied, blank (skipped)
+ *   User tiers        — Admin (full CRUD + execute), Manager (full CRUD + execute),
+ *                       Business User (read-only, denied when perm set gate active)
  *
  * Bulk note: Apex tests cannot insert 50M records (DML cap = 10,000 per transaction).
  * The chunk boundary tests insert 250 records to cross the 200-record boundary, proving
@@ -15,11 +18,11 @@
 @isTest
 private class QueryStationServiceTest {
 
-    // Query_Key__c is the unique required lookup key — this is what QueryStationService queries by
     private static final String KEY_ALL_ACCOUNTS   = 'get-all-accounts';
     private static final String KEY_BULK_ACCOUNTS  = 'get-bulk-accounts';
     private static final String KEY_WITH_BIND      = 'get-accounts-by-name';
     private static final String KEY_EMPTY_QUERY    = 'empty-query';
+    private static final String KEY_GATED          = 'gated-query';
 
     private static final String QUERY_TEXT_ALL_ACCOUNTS  = 'SELECT Id, Name FROM Account ORDER BY Name';
     private static final String QUERY_TEXT_BULK_ACCOUNTS = 'SELECT Id, Name FROM Account ORDER BY Name';
@@ -45,7 +48,7 @@ private class QueryStationServiceTest {
     static void shouldReturnRecords_WhenQueryExecutes() {
         // Given
         TestDataFactory.createAccounts(5, true);
-        TestDataFactory.createQueryStationRecord(KEY_ALL_ACCOUNTS, 'Get All Accounts', QUERY_TEXT_ALL_ACCOUNTS, true);
+        TestDataFactory.createQueryStationRecord(KEY_ALL_ACCOUNTS, QUERY_TEXT_ALL_ACCOUNTS, true);
 
         // When
         Test.startTest();
@@ -63,7 +66,7 @@ private class QueryStationServiceTest {
         // Given
         TestDataFactory.createAccounts(5, true);
         insert new Account(Name = 'Target Account');
-        TestDataFactory.createQueryStationRecord(KEY_WITH_BIND, 'Get Accounts By Name', QUERY_TEXT_WITH_BIND, true);
+        TestDataFactory.createQueryStationRecord(KEY_WITH_BIND, QUERY_TEXT_WITH_BIND, true);
 
         // When
         Test.startTest();
@@ -116,7 +119,7 @@ private class QueryStationServiceTest {
     @isTest
     static void shouldThrowException_WhenQueryTextIsBlank() {
         // Given — station record exists but Query_Text__c is empty
-        TestDataFactory.createQueryStationRecord(KEY_EMPTY_QUERY, 'Empty Query', '', true);
+        TestDataFactory.createQueryStationRecord(KEY_EMPTY_QUERY, '', true);
 
         // When / Then
         Test.startTest();
@@ -136,7 +139,7 @@ private class QueryStationServiceTest {
     static void shouldCallHandlerOnce_WhenResultSetIsExactly200() {
         // Given
         TestDataFactory.createAccounts(200, true);
-        TestDataFactory.createQueryStationRecord(KEY_BULK_ACCOUNTS, 'Get Bulk Accounts', QUERY_TEXT_BULK_ACCOUNTS, true);
+        TestDataFactory.createQueryStationRecord(KEY_BULK_ACCOUNTS, QUERY_TEXT_BULK_ACCOUNTS, true);
         ChunkCounter counter = new ChunkCounter();
 
         // When
@@ -163,7 +166,7 @@ private class QueryStationServiceTest {
     static void shouldCallHandlerTwice_WhenResultSetCrossesChunkBoundary() {
         // Given — 250 records: one full chunk of 200 + remainder of 50
         TestDataFactory.createAccounts(250, true);
-        TestDataFactory.createQueryStationRecord(KEY_BULK_ACCOUNTS, 'Get Bulk Accounts', QUERY_TEXT_BULK_ACCOUNTS, true);
+        TestDataFactory.createQueryStationRecord(KEY_BULK_ACCOUNTS, QUERY_TEXT_BULK_ACCOUNTS, true);
         ChunkCounter counter = new ChunkCounter();
 
         // When
@@ -188,7 +191,7 @@ private class QueryStationServiceTest {
     static void shouldCallHandlerOnce_WhenResultSetIsUnder200() {
         // Given
         TestDataFactory.createAccounts(75, true);
-        TestDataFactory.createQueryStationRecord(KEY_BULK_ACCOUNTS, 'Get Bulk Accounts', QUERY_TEXT_BULK_ACCOUNTS, true);
+        TestDataFactory.createQueryStationRecord(KEY_BULK_ACCOUNTS, QUERY_TEXT_BULK_ACCOUNTS, true);
         ChunkCounter counter = new ChunkCounter();
 
         // When
@@ -210,7 +213,7 @@ private class QueryStationServiceTest {
     @isTest
     static void shouldThrowException_WhenHandlerIsNull() {
         // Given
-        TestDataFactory.createQueryStationRecord(KEY_BULK_ACCOUNTS, 'Get Bulk Accounts', QUERY_TEXT_BULK_ACCOUNTS, true);
+        TestDataFactory.createQueryStationRecord(KEY_BULK_ACCOUNTS, QUERY_TEXT_BULK_ACCOUNTS, true);
 
         // When / Then
         Test.startTest();
@@ -230,7 +233,7 @@ private class QueryStationServiceTest {
     static void shouldReturnQueryLocator_WhenValidQueryName() {
         // Given
         TestDataFactory.createAccounts(10, true);
-        TestDataFactory.createQueryStationRecord(KEY_ALL_ACCOUNTS, 'Get All Accounts', QUERY_TEXT_ALL_ACCOUNTS, true);
+        TestDataFactory.createQueryStationRecord(KEY_ALL_ACCOUNTS, QUERY_TEXT_ALL_ACCOUNTS, true);
 
         // When
         Test.startTest();
@@ -283,7 +286,7 @@ private class QueryStationServiceTest {
     @isTest
     static void shouldReturnCachedRecord_WhenCalledTwiceWithSameName() {
         // Given
-        TestDataFactory.createQueryStationRecord(KEY_ALL_ACCOUNTS, 'Get All Accounts', QUERY_TEXT_ALL_ACCOUNTS, true);
+        TestDataFactory.createQueryStationRecord(KEY_ALL_ACCOUNTS, QUERY_TEXT_ALL_ACCOUNTS, true);
 
         // When
         Test.startTest();
@@ -310,6 +313,207 @@ private class QueryStationServiceTest {
         } catch (QueryStationService.QueryStationException e) {
             Assert.isTrue(e.getMessage().contains('No QueryStation__c record found'),
                 'Exception should state record not found');
+        }
+        Test.stopTest();
+    }
+
+    // ─── Gate 2: Permission Set — allowed (user holds a matching perm set) ───
+
+    @isTest
+    static void shouldAllowExecution_WhenUserHasRequiredPermSet() {
+        // Given
+        TestDataFactory.createAccounts(3, true);
+        QueryStation__c station = TestDataFactory.createQueryStationRecord(
+            KEY_GATED, QUERY_TEXT_ALL_ACCOUNTS, false
+        );
+        station.Allowed_Permission_Sets__c = 'QueryStation_User';
+        insert station;
+
+        User u = TestDataFactory.createUser('GateAllowed', 'Standard User');
+        TestDataFactory.assignPermissionSet(u, 'QueryStation_User');
+
+        // When / Then
+        Test.startTest();
+        System.runAs(u) {
+            List<SObject> results = QueryStationService.execute(KEY_GATED);
+            Assert.areEqual(3, results.size(),
+                'User with matching perm set should be allowed through Gate 2');
+        }
+        Test.stopTest();
+    }
+
+    // ─── Gate 2: Permission Set — denied (user lacks any matching perm set) ──
+
+    @isTest
+    static void shouldDenyExecution_WhenUserLacksRequiredPermSet() {
+        // Given
+        QueryStation__c station = TestDataFactory.createQueryStationRecord(
+            KEY_GATED, QUERY_TEXT_ALL_ACCOUNTS, false
+        );
+        station.Allowed_Permission_Sets__c = 'QueryStation_User';
+        insert station;
+
+        User u = TestDataFactory.createUser('GateDenied', 'Standard User');
+
+        // When / Then
+        Test.startTest();
+        System.runAs(u) {
+            try {
+                QueryStationService.execute(KEY_GATED);
+                Assert.fail('Expected QueryStationException for missing permission set');
+            } catch (QueryStationService.QueryStationException e) {
+                Assert.isTrue(e.getMessage().contains('Access denied'),
+                    'Exception should state access denied');
+            }
+        }
+        Test.stopTest();
+    }
+
+    // ─── Gate 2: Permission Set — skipped when field is blank ────────────────
+
+    @isTest
+    static void shouldAllowExecution_WhenPermSetFieldIsBlank() {
+        // Given — no Allowed_Permission_Sets__c set; gate should be skipped entirely
+        TestDataFactory.createAccounts(2, true);
+        TestDataFactory.createQueryStationRecord(
+            KEY_GATED, QUERY_TEXT_ALL_ACCOUNTS, true
+        );
+
+        User u = TestDataFactory.createUser('GateSkipped', 'Standard User');
+        TestDataFactory.assignPermissionSet(u, 'QueryStation_User');
+
+        // When / Then
+        Test.startTest();
+        System.runAs(u) {
+            List<SObject> results = QueryStationService.execute(KEY_GATED);
+            Assert.areEqual(2, results.size(),
+                'Blank Allowed_Permission_Sets__c should skip Gate 2 and allow execution');
+        }
+        Test.stopTest();
+    }
+
+    // ─── Gate 2: Permission Set — one of multiple perm sets matches ──────────
+
+    @isTest
+    static void shouldAllowExecution_WhenOneOfMultiplePermSetsMatches() {
+        // Given — query allows either perm set; user holds only one of them
+        TestDataFactory.createAccounts(2, true);
+        QueryStation__c station = TestDataFactory.createQueryStationRecord(
+            KEY_GATED, QUERY_TEXT_ALL_ACCOUNTS, false
+        );
+        station.Allowed_Permission_Sets__c = 'QueryStation_Admin,QueryStation_User';
+        insert station;
+
+        User u = TestDataFactory.createUser('MultiPermMatch', 'Standard User');
+        TestDataFactory.assignPermissionSet(u, 'QueryStation_User');
+
+        // When / Then
+        Test.startTest();
+        System.runAs(u) {
+            List<SObject> results = QueryStationService.execute(KEY_GATED);
+            Assert.areEqual(2, results.size(),
+                'User holding one of several allowed perm sets should pass Gate 2');
+        }
+        Test.stopTest();
+    }
+
+    // ─── User tier: Admin — full CRUD + execute ───────────────────────────────
+
+    @isTest
+    static void shouldAllowExecution_AsAdminUser() {
+        // Given
+        TestDataFactory.createAccounts(3, true);
+        QueryStation__c station = TestDataFactory.createQueryStationRecord(
+            KEY_GATED, QUERY_TEXT_ALL_ACCOUNTS, false
+        );
+        station.Allowed_Permission_Sets__c = 'QueryStation_Admin';
+        insert station;
+
+        User admin = TestDataFactory.createUser('AdminTier', 'Standard User');
+        TestDataFactory.assignPermissionSet(admin, 'QueryStation_Admin');
+
+        // When / Then
+        Test.startTest();
+        System.runAs(admin) {
+            List<SObject> results = QueryStationService.execute(KEY_GATED);
+            Assert.areEqual(3, results.size(),
+                'Admin-tier user should pass Gate 2 and execute successfully');
+        }
+        Test.stopTest();
+    }
+
+    // ─── User tier: Manager — full CRUD + execute ────────────────────────────
+
+    @isTest
+    static void shouldAllowExecution_AsManagerUser() {
+        // Given
+        TestDataFactory.createAccounts(3, true);
+        QueryStation__c station = TestDataFactory.createQueryStationRecord(
+            KEY_GATED, QUERY_TEXT_ALL_ACCOUNTS, false
+        );
+        station.Allowed_Permission_Sets__c = 'QueryStation_Manager';
+        insert station;
+
+        User manager = TestDataFactory.createUser('ManagerTier', 'Standard User');
+        TestDataFactory.assignPermissionSet(manager, 'QueryStation_Manager');
+
+        // When / Then
+        Test.startTest();
+        System.runAs(manager) {
+            List<SObject> results = QueryStationService.execute(KEY_GATED);
+            Assert.areEqual(3, results.size(),
+                'Manager-tier user should pass Gate 2 and execute successfully');
+        }
+        Test.stopTest();
+    }
+
+    // ─── User tier: Business User — denied when gate active ──────────────────
+
+    @isTest
+    static void shouldDenyExecution_AsBusinessUser_WhenPermSetRestricted() {
+        // Given — query is restricted to Admin only; business user holds QueryStation_User
+        QueryStation__c station = TestDataFactory.createQueryStationRecord(
+            KEY_GATED, QUERY_TEXT_ALL_ACCOUNTS, false
+        );
+        station.Allowed_Permission_Sets__c = 'QueryStation_Admin';
+        insert station;
+
+        User bizUser = TestDataFactory.createUser('BizUserTier', 'Standard User');
+        TestDataFactory.assignPermissionSet(bizUser, 'QueryStation_User');
+
+        // When / Then
+        Test.startTest();
+        System.runAs(bizUser) {
+            try {
+                QueryStationService.execute(KEY_GATED);
+                Assert.fail('Expected QueryStationException for business user lacking required perm set');
+            } catch (QueryStationService.QueryStationException e) {
+                Assert.isTrue(e.getMessage().contains('Access denied'),
+                    'Business user without the required perm set should be denied');
+            }
+        }
+        Test.stopTest();
+    }
+
+    // ─── User tier: Business User — allowed when gate is open ────────────────
+
+    @isTest
+    static void shouldAllowExecution_AsBusinessUser_WhenNoPermSetRestriction() {
+        // Given — no Allowed_Permission_Sets__c; any user with the perm set can execute
+        TestDataFactory.createAccounts(2, true);
+        TestDataFactory.createQueryStationRecord(
+            KEY_GATED, QUERY_TEXT_ALL_ACCOUNTS, true
+        );
+
+        User bizUser = TestDataFactory.createUser('BizUserOpen', 'Standard User');
+        TestDataFactory.assignPermissionSet(bizUser, 'QueryStation_User');
+
+        // When / Then
+        Test.startTest();
+        System.runAs(bizUser) {
+            List<SObject> results = QueryStationService.execute(KEY_GATED);
+            Assert.areEqual(2, results.size(),
+                'Business user should execute successfully when no perm set restriction is set');
         }
         Test.stopTest();
     }

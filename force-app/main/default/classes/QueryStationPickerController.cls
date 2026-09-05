@@ -14,20 +14,6 @@ public with sharing class QueryStationPickerController {
         return options;
     }
 
-    @AuraEnabled(cacheable=true)
-    public static List<OptionItem> getCustomPermissions() {
-        List<OptionItem> options = new List<OptionItem>();
-        for (CustomPermission cp : [
-            SELECT DeveloperName, MasterLabel
-            FROM CustomPermission
-            WITH SYSTEM_MODE
-            ORDER BY MasterLabel
-        ]) {
-            options.add(new OptionItem(cp.MasterLabel, cp.DeveloperName));
-        }
-        return options;
-    }
-
     public class OptionItem {
         @AuraEnabled public String label;
         @AuraEnabled public String value;

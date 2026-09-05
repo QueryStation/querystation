@@ -2,14 +2,12 @@
 /**
  * Retrieves and executes externalized SOQL queries stored as QueryStation__c records.
  *
- * Access control — three gates evaluated in sequence before any execution:
+ * Access control — two gates evaluated in sequence before any execution:
  *   Gate 1 (Record visibility) — enforced by Salesforce sharing rules on QueryStation__c.
  *                                 Configure OWD + sharing rules in Setup; no code needed.
- *   Gate 2 (Custom Permission) — if Required_Custom_Permission__c is set on the record,
- *                                 the running user must hold that Custom Permission.
- *   Gate 3 (Permission Set)    — if Allowed_Permission_Sets__c is set on the record,
+ *   Gate 2 (Permission Set)    — if Allowed_Permission_Sets__c is set on the record,
  *                                 the running user must have at least one matching Permission Set.
- *   Batch Apex (getQueryLocator) skips Gates 2 & 3 — no user session exists in that context.
+ *   Batch Apex (getQueryLocator) skips Gate 2 — no user session exists in that context.
  *
  * Execution modes:
  *   execute()         — returns full List<SObject>; suitable for small/bounded result sets,
@@ -25,7 +23,6 @@ public with sharing class QueryStationService {
     private static final String ERROR_BLANK_QUERY_NAME      = 'queryName cannot be blank.';
     private static final String ERROR_QUERY_NOT_FOUND       = 'No QueryStation__c record found for Query_Key__c = ';
     private static final String ERROR_QUERY_TEXT_BLANK      = 'Query_Text__c is blank on QueryStation__c record: ';
-    private static final String ERROR_MISSING_CUSTOM_PERM   = 'Access denied: Custom Permission required to execute query: ';
     private static final String ERROR_MISSING_PERMISSION_SET = 'Access denied: a required Permission Set is not assigned for query: ';
 
     // ─── Chunk Handler Interface ─────────────────────────────────────────────
@@ -290,8 +287,8 @@ public with sharing class QueryStationService {
         // to, breaking the service even for fully authorized callers.
         // The actual stored query runs with USER_MODE in execute().
         List<QueryStation__c> records = [
-            SELECT Id, Name, Query_Key__c, Query_For__c, Query_Text__c,
-                   Required_Custom_Permission__c, Allowed_Permission_Sets__c
+            SELECT Id, Name, Query_Key__c, Query_Text__c,
+                   Allowed_Permission_Sets__c
             FROM QueryStation__c
             WHERE Query_Key__c = :queryName
             WITH SYSTEM_MODE
@@ -322,29 +319,19 @@ public with sharing class QueryStationService {
     // ─── Access Gates ────────────────────────────────────────────────────────
 
     /**
-     * Enforces Gates 2 and 3 for user-facing execution methods.
+     * Enforces Gate 2 for user-facing execution methods.
      * Skipped by getQueryLocator() — Batch Apex has no user session.
      *
-     * Gate 2: if Required_Custom_Permission__c is populated, the running user
-     *         must hold that Custom Permission.
-     * Gate 3: if Allowed_Permission_Sets__c is populated, the running user must
+     * Gate 2: if Allowed_Permission_Sets__c is populated, the running user must
      *         have at least one of the listed Permission Sets assigned.
      *
      * @param station    The resolved QueryStation__c record
      * @param queryName  Used in error messages only
-     * @throws QueryStationException  if either gate denies access
+     * @throws QueryStationException  if the gate denies access
      */
     private static void enforceAccessGates(QueryStation__c station, String queryName) {
 
-        // Gate 2 — Custom Permission check
-        String requiredPerm = station.Required_Custom_Permission__c;
-        if (String.isNotBlank(requiredPerm)) {
-            if (!FeatureManagement.checkPermission(requiredPerm)) {
-                throw new QueryStationException(ERROR_MISSING_CUSTOM_PERM + queryName);
-            }
-        }
-
-        // Gate 3 — Permission Set check
+        // Gate 2 — Permission Set check
         String allowedSetsRaw = station.Allowed_Permission_Sets__c;
         if (String.isNotBlank(allowedSetsRaw)) {
             Set<String> allowedSets = new Set<String>();

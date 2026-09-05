@@ -12,10 +12,6 @@
         <name>CustomApplication</name>
     </types>
     <types>
-        <members>QueryStation_Access</members>
-        <name>CustomPermission</name>
-    </types>
-    <types>
         <members>QueryStation__c</members>
         <name>CustomObject</name>
     </types>
@@ -25,12 +21,10 @@
         <members>QueryStation__c.Description__c</members>
         <members>QueryStation__c.Object_Name__c</members>
         <members>QueryStation__c.Parameters__c</members>
-        <members>QueryStation__c.Query_For__c</members>
-        <members>QueryStation__c.Query_Key__c</members>
+<members>QueryStation__c.Query_Key__c</members>
         <members>QueryStation__c.Query_Source__c</members>
         <members>QueryStation__c.Query_Text__c</members>
         <members>QueryStation__c.Query_Type__c</members>
-        <members>QueryStation__c.Required_Custom_Permission__c</members>
         <members>QueryStation__c.Status__c</members>
         <name>CustomField</name>
     </types>
@@ -51,6 +45,8 @@
         <name>LightningComponentBundle</name>
     </types>
     <types>
+        <members>QueryStation_Admin</members>
+        <members>QueryStation_Manager</members>
         <members>QueryStation_User</members>
         <name>PermissionSet</name>
     </types>

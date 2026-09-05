@@ -48,7 +48,7 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>QueryStation__c.Query_For__c</field>
+        <field>QueryStation__c.Query_Text__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -59,11 +59,6 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>QueryStation__c.Query_Text__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>QueryStation__c.Required_Custom_Permission__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <layoutAssignments>

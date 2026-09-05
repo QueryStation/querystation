@@ -18,18 +18,6 @@
             </lightning-dual-listbox>
 
             <div class="slds-m-top_medium">
-                <lightning-combobox
-                    name="requiredCustomPermission"
-                    label="Required Custom Permission"
-                    field-level-help="User must hold this Custom Permission to execute this query."
-                    placeholder="— None —"
-                    options={customPermissionOptions}
-                    value={selectedCustomPerm}
-                    onchange={handleCustomPermChange}>
-                </lightning-combobox>
-            </div>
-
-            <div class="slds-m-top_medium">
                 <lightning-button
                     variant="brand"
                     label="Save"

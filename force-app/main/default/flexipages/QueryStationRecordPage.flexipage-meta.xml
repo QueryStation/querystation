@@ -21,8 +21,8 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Query_For__c</fieldItem>
-                <identifier>RecordQuery_For__cSecondaryField0</identifier>
+                <fieldItem>Record.Query_Text__c</fieldItem>
+                <identifier>RecordQuery_Text__cSecondaryField0</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -120,8 +120,8 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Query_For__c</fieldItem>
-                <identifier>RecordQuery_For__cColumn1Field1</identifier>
+                <fieldItem>Record.Query_Text__c</fieldItem>
+                <identifier>RecordQuery_Text__cColumn1Field1</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
